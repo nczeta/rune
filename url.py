@@ -34,4 +34,4 @@ def get_request():
     url = get_url("api.github.com")
     r = requests.get(url)
     r.raise_for_status
-    return r.json
+    return r.json()
