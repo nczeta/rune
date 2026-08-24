@@ -6,23 +6,26 @@ def select_api(api):
     return dom
 
 
-def github_url(api, username):
+def get_url(api):
     dm = select_api(api)
     if dm == "htpps://api.github.com":
-        endp = get_username(username)
+        endp = get_username()
+        endp = endp + get_github_actions()
         url = dm + endp
 
     return url
 
 
-def get_username(username):
+def get_username():
+    username = input("What is the username?")
     endpoint = f"/users/{username}"
     return endpoint
 
 
-def get_github_actions(action):
+def get_github_actions():
+    action = input("What is the action?")
     if not action in ["repos, followers, following, gists"]:
         raise Exception("Action unknown")
     else:
         act = f"/{action}"
-    return
+    return act
