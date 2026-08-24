@@ -1,37 +1,22 @@
 import requests
 
-url_api = "api.github.com"
-
 def main():
     user = input("Insert username: ")
-    r = get_request(user)
-    data = get_repos(r)
-    
+    data = get_github_repos(user)
     print(data)    
 
+main()
 
-def get_url(username):
-    url = f"https://{url_api}/users/{username}/repos"
-    return url
-
-
-def get_request(username):
-    url = get_url(username)
+def get_github_repos(username):
+    url = f"https://api.github.com/users/{username}/repos"
     try:
         r = requests.get(url)
-        status = r.raise_for_status()
+        r.raise_for_status()
     except requests.exceptions.HTTPError:
-        dic = {"error": "invalid username"}
-        return dic
-    return r.json()
-
-
-def get_repos(r):
+        error = {"error": "invalid username"}
+        return error
     dic = {}
-
-    for repo in r:
+    for repo in r.json():
         dic[repo["name"]] = repo["html_url"]
-
+    
     return dic
-
-main()
