@@ -15,7 +15,8 @@ def main():
         )
 
         response = get_response(messages, client)
-
+        print("Assistant:", response)
+        
         messages.append(
             {
                 "role": "assistant",
