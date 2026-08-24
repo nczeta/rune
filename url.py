@@ -28,3 +28,10 @@ def get_github_actions():
     else:
         act = f"/{action}"
     return act
+
+
+def get_request():
+    url = get_url("api.github.com")
+    r = requests.get(url)
+    r.raise_for_status
+    return r.json
