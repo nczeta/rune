@@ -16,14 +16,14 @@ def select_api(api):
 
 
 def get_username():
-    username = input("What is the username?")
+    username = input("What is the username? ")
     endpoint = f"/users/{username}"
     return endpoint
 
 
 def get_github_actions():
-    action = input("What is the action?")
-    if not action in ["repos", "followers", "following", "gists"]:
+    action = input("What is the action? ")
+    if not action in ["repos", "followers", "following", "gists", ""]:
         raise Exception("Action unknown")
     else:
         act = f"/{action}"
