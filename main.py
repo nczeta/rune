@@ -1,30 +1,34 @@
 from groq import Groq
 
-client = Groq()
+def main():
+    client = Groq()
 
-messages = []
+    messages = []
 
-while True:
-    user_message = input("User: ")
-    messages.append(
-        {
-            "role": "user",
-            "content": user_message
-        }
-    )
+    while True:
+        user_message = input("User: ")
+        messages.append(
+            {
+                "role": "user",
+                "content": user_message
+            }
+        )
 
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        messages=messages
-    )
-    print(response.choices[0].message.content)
-    
-    messages.append(
-        {
-            "role": "assistant",
-            "content": response.choices[0].message.content
-        }
-    )
+        response = get_response(messages, client)
+
+        messages.append(
+            {
+                "role": "assistant",
+                "content": response
+            }
+        )
+
+def get_response(messages, client):
+    response = client.chat.completions.create (
+            model="openai/gpt-oss-120b",
+            messages=messages
+        )
+    return response.choices[0].message.content
 
 
-
+main()
