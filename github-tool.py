@@ -4,8 +4,10 @@ url_api = "api.github.com"
 
 def main():
     user = input("Insert username: ")
-
-    print_repos(user)    
+    r = get_request(user)
+    data = get_repos(r)
+    
+    print(data)    
 
 
 def get_url(username):
@@ -24,11 +26,12 @@ def get_request(username):
     return r.json()
 
 
-def print_repos(user):
-    r = get_request(user)
+def get_repos(r):
+    dic = {}
 
     for repo in r:
-        print(repo["name"])
-        print(repo["html_url"])
+        dic[repo["name"]] = repo["html_url"]
+
+    return dic
 
 main()
