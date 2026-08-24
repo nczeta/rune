@@ -1,11 +1,5 @@
 import requests
 
-
-def select_api(api):
-    dom = f"htpps://{api}"
-    return dom
-
-
 def get_url(api):
     dm = select_api(api)
     if dm == "htpps://api.github.com":
@@ -14,6 +8,11 @@ def get_url(api):
         url = dm + endp
 
     return url
+
+
+def select_api(api):
+    dom = f"htpps://{api}"
+    return dom
 
 
 def get_username():
