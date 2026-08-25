@@ -20,45 +20,50 @@ def main():
             }
         )
 
-        response = get_response(messages, client)
         
-        if response.tool_calls:
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": response.content,
-                    "tool_calls": [
-                        {
-                            "id": response.tool_calls[0].id,
-                            "type": "function",
-                            "function": {
-                                "name": response.tool_calls[0].function.name,
-                                "arguments": response.tool_calls[0].function.arguments
+
+        while True:
+            response = get_response(messages, client)
+            if not response.tool_calls:
+                print("Rune:",response.content)
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": response.content
+                    }
+                )
+                break
+            else:
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": response.content,
+                        "tool_calls": [
+                            {
+                                "id": response.tool_calls[0].id,
+                                "type": "function",
+                                "function": {
+                                    "name": response.tool_calls[0].function.name,
+                                    "arguments": response.tool_calls[0].function.arguments
+                                }
                             }
-                        }
-                    ]
-                }
-            )
+                        ]
+                    }
+                )
+                
+                arguments = json.loads(response.tool_calls[0].function.arguments)
+                name = response.tool_calls[0].function.name
+                function = tool_functions[name]
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": response.tool_calls[0].id,
+                        "content": json.dumps(function(**arguments))
+                    }
+                )   
             
-            arguments = json.loads(response.tool_calls[0].function.arguments)
-            name = response.tool_calls[0].function.name
-            function = tool_functions[name]
-            messages.append(
-                {
-                    "role": "tool",
-                    "tool_call_id": response.tool_calls[0].id,
-                    "content": json.dumps(function(**arguments))
-                }
-            )
-            response = get_response(messages, client)    
-        
-        print(response.content)
-        messages.append(
-            {
-                "role": "assistant",
-                "content": response.content
-            }
-        )
+            
+
 
 def get_response(messages, client):
     response = client.chat.completions.create (
