@@ -1,12 +1,5 @@
 import requests
 
-def main():
-    user = input("Insert username: ")
-    data = get_github_repos(user)
-    print(data)    
-
-main()
-
 def get_github_repos(username):
     url = f"https://api.github.com/users/{username}/repos"
     try:
