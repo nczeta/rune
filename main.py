@@ -31,7 +31,7 @@ def get_response(messages, client):
             messages=messages,
             tools = tools_des
         )
-    return response.choices[0].message.content
+    return response.choices[0].message#.content
 
 
 main()
