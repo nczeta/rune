@@ -1,3 +1,5 @@
+from tools import *
+
 tools_des = [
     {
         "type": "function",
@@ -17,3 +19,7 @@ tools_des = [
         }
     }
 ]
+
+tool_functions = {
+    "get_github_repos": get_github_repos
+}
