@@ -25,7 +25,7 @@ def main():
         name = response.tool_calls[0].function.name
         function = tool_functions[name]
         
-        print(function(arguments["username"]))
+        print(function(**arguments))
 
         messages.append(
             {
