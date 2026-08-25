@@ -52,7 +52,7 @@ def main():
             )
             response = get_response(messages, client)    
         
-        print(response.content)
+        print("Rune:",response.content)
         messages.append(
             {
                 "role": "assistant",

@@ -13,3 +13,15 @@ def get_github_repos(username):
         dic[repo["name"]] = repo["html_url"]
     
     return dic
+
+
+def get_github_user(username):
+    url = f"https://api.github.com/users/{username}"
+    try:
+        r = requests.get(url)
+        r.raise_for_status
+    except requests.exceptions.HTTPError:
+        error = "error: invalid username"
+        return error
+
+    return r.json()
