@@ -22,7 +22,7 @@ tools_des = [
             "type": "function",
             "function": {
                 "name": "get_github_user",
-                "description": "Get public information about a GitHub user, including their followers, following, profile details, and account dates.",
+                "description": "Get public information about a GitHub user, profile details and account dates.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -39,7 +39,7 @@ tools_des = [
                 "type": "function",
                 "function": {
                     "name": "get_github_following",
-                    "description": "Get public information about a GitHub user, including their followers, following, profile details, and account dates.",
+                    "description": "Get the users followed by a provided GitHub user",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -56,7 +56,7 @@ tools_des = [
                 "type": "function",
                 "function": {
                     "name": "get_github_followers",
-                    "description": "Get public information about a GitHub user, including their followers, following, profile details, and account dates.",
+                    "description": "Get the users who follow a provided GitHub user",
                     "parameters": {
                         "type": "object",
                         "properties": {
