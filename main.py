@@ -1,5 +1,8 @@
 from groq import Groq
-from tools_description import tools_des 
+from tools_description import tools_des
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def main():
     client = Groq()
