@@ -1,6 +1,8 @@
 from groq import Groq
 from tools_description import tools_des
+from tools import *
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
@@ -20,7 +22,9 @@ def main():
 
         response = get_response(messages, client)
         print("Assistant:", response)
-        
+        arguments = json.loads(response.tool_calls[0].function.arguments)
+        print(get_github_repos(arguments["username"]))
+
         messages.append(
             {
                 "role": "assistant",
