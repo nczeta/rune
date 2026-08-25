@@ -1,4 +1,4 @@
-tools = [
+tools_des = [
     {
         "name": "get_github_repos",
         "description": "Get the public repos from a provided GitHub user",

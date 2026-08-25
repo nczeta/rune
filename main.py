@@ -1,4 +1,5 @@
 from groq import Groq
+from tools_description import tools_des 
 
 def main():
     client = Groq()
@@ -27,7 +28,8 @@ def main():
 def get_response(messages, client):
     response = client.chat.completions.create (
             model="openai/gpt-oss-120b",
-            messages=messages
+            messages=messages,
+            tools = tools_des
         )
     return response.choices[0].message.content
 
