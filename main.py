@@ -21,16 +21,42 @@ def main():
         )
 
         response = get_response(messages, client)
-        arguments = json.loads(response.tool_calls[0].function.arguments)
-        name = response.tool_calls[0].function.name
-        function = tool_functions[name]
         
-        print(function(**arguments))
-
+        if response.tool_calls:
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": response.content,
+                    "tool_calls": [
+                        {
+                            "id": response.tool_calls[0].id,
+                            "type": "function",
+                            "function": {
+                                "name": response.tool_calls[0].function.name,
+                                "arguments": response.tool_calls[0].function.arguments
+                            }
+                        }
+                    ]
+                }
+            )
+            
+            arguments = json.loads(response.tool_calls[0].function.arguments)
+            name = response.tool_calls[0].function.name
+            function = tool_functions[name]
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": response.tool_calls[0].id,
+                    "content": json.dumps(function(**arguments))
+                }
+            )
+            response = get_response(messages, client)    
+        
+        print(response.content)
         messages.append(
             {
                 "role": "assistant",
-                "content": response
+                "content": response.content
             }
         )
 
@@ -40,7 +66,7 @@ def get_response(messages, client):
             messages=messages,
             tools = tools_des
         )
-    return response.choices[0].message#.content
+    return response.choices[0].message
 
 
 main()
