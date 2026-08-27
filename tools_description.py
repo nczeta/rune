@@ -102,6 +102,23 @@ tools_des = [
                         "required": ["url"]
                     }
                 }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_places",
+            "description": "Search for places and locations using Google Places.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The place, business, or location to search for."
+                    }
+                },
+                "required": ["query"]
+            }
+        }
     }
 ]
 
@@ -111,7 +128,6 @@ tool_functions = {
     "get_github_following": get_github_following,
     "get_github_followers": get_github_followers,
     "web_search": web_search,
-    "web_fetch": web_fetch
+    "web_fetch": web_fetch,
+    "search_places": search_places
 }
-
-
