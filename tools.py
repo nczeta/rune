@@ -78,3 +78,16 @@ def web_search(query):
         results.append(result)
 
     return results
+
+
+def web_fetch(web_page):
+    try:
+        r = requests.get(web_page)
+        r.raise_for_status()
+    except requests.exceptions.HTTPError:
+        error = "error: invalid url"
+        return error
+
+    print(r.text)
+
+web_fetch("https://www.google.com/")
