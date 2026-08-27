@@ -81,9 +81,9 @@ def web_search(query):
     return results
 
 
-def web_fetch(web_page):
+def web_fetch(url):
     try:
-        r = requests.get(web_page, timeout=10)
+        r = requests.get(url, timeout=10)
         r.raise_for_status()
     except requests.exceptions.HTTPError:
         error = "error: invalid webpage"
