@@ -1,6 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
+from bs4 import BeautifulSoup
 
 load_dotenv()
 
@@ -85,9 +86,14 @@ def web_fetch(web_page):
         r = requests.get(web_page)
         r.raise_for_status()
     except requests.exceptions.HTTPError:
-        error = "error: invalid url"
+        error = "error: invalid webpage"
         return error
 
-    print(r.text)
+    soup = BeautifulSoup(r.text, "html.parser")
+    for tag in soup(['script', 'style']):
+        tag.decompose()
+
+    txt = soup.get_text(separator=" ", strip=True)
+    print(txt)
 
 web_fetch("https://www.google.com/")
