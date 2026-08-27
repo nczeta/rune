@@ -1,5 +1,8 @@
 import requests
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def get_github_repos(username):
     url = f"https://api.github.com/users/{username}/repos"
@@ -53,22 +56,29 @@ def get_github_following(username):
 
 
 def web_search(query):
-    url = "https://google.serper.dev/search"
-
-    header = {
-        "X-API-KEY": os.getenv("SERPER-API-KEY"),
-        "Content-Type": "application/json"
-    }
+    url = "https://api.tavily.com/search"
 
     data = {
-        "q": query
+        "api_key": os.getenv("TAVILY_API_KEY"),
+        "query": query
     }
 
-    response = requests.post(
+    responses = requests.post(
         url,
-        headers=header,
-        data=data
+        json=data
     )
+    responses = responses.json()["results"]
 
-    return response.json()
+    results = []
+    for response in responses:
+        result = {
+            "url": response['url'],
+            "content": response['content']
+        }
+        results.append(result)
+
+    return results
+        
+
+web_search("Python requests")
     
