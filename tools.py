@@ -129,5 +129,15 @@ def search_places(query):
         error = "error: invalid place"
         return error
 
-    return response.json()
+    results = []
 
+    for place in response.json()['places']:
+        results.append(
+            {
+                "name": place['displayName']['text'],
+                "address": place['formattedAddress'],
+                "rating": place['rating']
+            }
+        )
+
+    return results 
