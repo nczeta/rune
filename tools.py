@@ -78,7 +78,3 @@ def web_search(query):
         results.append(result)
 
     return results
-        
-
-web_search("Python requests")
-    
