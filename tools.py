@@ -1,4 +1,9 @@
 import requests
+import os
+from dotenv import load_dotenv
+from bs4 import BeautifulSoup
+
+load_dotenv()
 
 def get_github_repos(username):
     url = f"https://api.github.com/users/{username}/repos"
@@ -49,3 +54,56 @@ def get_github_following(username):
         return error
 
     return r.json()
+
+
+def web_search(query):
+    url = "https://api.tavily.com/search"
+
+    data = {
+        "api_key": os.getenv("TAVILY_API_KEY"),
+        "query": query
+    }
+
+    responses = requests.post(
+        url,
+        json=data
+    )
+    responses = responses.json()["results"]
+
+    results = []
+    for response in responses:
+        result = {
+            "url": response['url'],
+            "content": response['content']
+        }
+        results.append(result)
+
+    return results
+
+
+def web_fetch(url):
+    try:
+        r = requests.get(url, timeout=10)
+        r.raise_for_status()
+    except requests.exceptions.HTTPError:
+        error = "error: invalid webpage"
+        return error
+
+    soup = BeautifulSoup(r.text, "html.parser")
+
+    for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
+        tag.decompose()
+
+    content = soup.find("article")
+
+    if content is None:
+        content = soup.find("main")
+
+    if content is None:
+        content = soup.find("body")
+
+    if content is None:
+        return "Error: could not extract webpage content"
+
+    txt = soup.get_text(separator=" ", strip=True)
+    return txt

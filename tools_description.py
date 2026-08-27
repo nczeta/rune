@@ -68,6 +68,40 @@ tools_des = [
                         "required": ["username"]
                     }
                 }
+    },
+    {
+                "type": "function",
+                "function": {
+                    "name": "web_search",
+                    "description": "Search the web for information using a search query. Returns a list of relevant web pages with their URLs and a short content snippet.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The search query to use to find relevant information on the web."
+                            }
+                        },
+                        "required": ["query"]
+                    }
+                }
+    },
+    {
+                "type": "function",
+                "function": {
+                    "name": "web_fetch",
+                    "description": "Fetch and extract the readable text content from a specific web page.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "The URL of the web page to fetch and read."
+                            }
+                        },
+                        "required": ["url"]
+                    }
+                }
     }
 ]
 
@@ -75,5 +109,9 @@ tool_functions = {
     "get_github_repos": get_github_repos,
     "get_github_user": get_github_user,
     "get_github_following": get_github_following,
-    "get_github_followers": get_github_followers
+    "get_github_followers": get_github_followers,
+    "web_search": web_search,
+    "web_fetch": web_fetch
 }
+
+
