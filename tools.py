@@ -1,4 +1,5 @@
 import requests
+import os
 
 def get_github_repos(username):
     url = f"https://api.github.com/users/{username}/repos"
@@ -49,3 +50,25 @@ def get_github_following(username):
         return error
 
     return r.json()
+
+
+def web_search(query):
+    url = "https://google.serper.dev/search"
+
+    header = {
+        "X-API-KEY": os.getenv("SERPER-API-KEY"),
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "q": query
+    }
+
+    response = requests.post(
+        url,
+        headers=header,
+        data=data
+    )
+
+    return response.json()
+    
