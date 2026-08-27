@@ -119,6 +119,23 @@ tools_des = [
                 "required": ["query"]
             }
         }
+    },
+    {
+    "type": "function",
+    "function": {
+        "name": "get_forecast",
+        "description": "Get the current weather and forecast for a specified location.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                        "type": "string",
+                        "description": "The city or location for which to get the weather forecast."
+                    }
+                },
+                "required": ["query"]
+            }
+        }
     }
 ]
 
@@ -129,5 +146,6 @@ tool_functions = {
     "get_github_followers": get_github_followers,
     "web_search": web_search,
     "web_fetch": web_fetch,
-    "search_places": search_places
+    "search_places": search_places,
+    "get_forecast": get_forecast
 }
