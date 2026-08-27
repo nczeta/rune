@@ -83,17 +83,27 @@ def web_search(query):
 
 def web_fetch(web_page):
     try:
-        r = requests.get(web_page)
+        r = requests.get(web_page, timeout=10)
         r.raise_for_status()
     except requests.exceptions.HTTPError:
         error = "error: invalid webpage"
         return error
 
     soup = BeautifulSoup(r.text, "html.parser")
-    for tag in soup(['script', 'style']):
+
+    for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
         tag.decompose()
 
-    txt = soup.get_text(separator=" ", strip=True)
-    print(txt)
+    content = soup.find("article")
 
-web_fetch("https://www.google.com/")
+    if content is None:
+        content = soup.find("main")
+
+    if content is None:
+        content = soup.find("body")
+
+    if content is None:
+        return "Error: could not extract webpage content"
+
+    txt = soup.get_text(separator=" ", strip=True)
+    return txt
