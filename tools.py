@@ -140,4 +140,54 @@ def search_places(query):
             }
         )
 
-    return results 
+    return results
+
+
+def get_coordinates(city):
+    url = "https://geocoding-api.open-meteo.com/v1/search"
+
+    try:
+        response = requests.get(
+            url,
+            params={
+                "name": city,
+                "count": 1,
+                "language": "it",
+                "format": "json"
+            }
+        )
+    except requests.exceptions.HTTPError:
+            error = "error: invalid city"
+            return error
+
+    datas = response.json()['results'][0]
+    latitude = datas['latitude']
+    longitude = datas['longitude']
+
+    return latitude, longitude
+
+
+def get_forecast(query):
+    latitude, longitude = get_coordinates(query)
+    url = "https://api.open-meteo.com/v1/forecast"
+
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "current": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m",
+        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code",
+        "timezone": "auto"
+    }
+    try:
+        response = requests.get(
+            url,
+            params=params
+        )
+        response.raise_for_status()
+    except requests.exceptions.HTTPError:
+            error = "error: couldn't get the forecast"
+            return error
+
+    print(response.json())
+    
+get_forecast("Verona")
