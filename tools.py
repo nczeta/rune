@@ -83,7 +83,7 @@ def web_search(query):
 
 def web_fetch(url):
     try:
-        r = requests.get(url, timeout=10)
+        r = requests.get(url)
         r.raise_for_status()
     except requests.exceptions.HTTPError:
         error = "error: invalid webpage"
@@ -107,3 +107,27 @@ def web_fetch(url):
 
     txt = soup.get_text(separator=" ", strip=True)
     return txt
+
+
+def search_places(query):
+    url = "https://places.googleapis.com/v1/places:searchText"
+    header = {
+        "X-Goog-Api-Key": os.getenv("MAPS_API_KEY"),
+        "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.rating"
+    }
+    body = {
+        "textQuery": query
+    }
+    try:
+        response = requests.post(
+            url,
+            headers=header,
+            json=body
+        )
+        response.raise_for_status()
+    except requests.exceptions.HTTPError:
+        error = "error: invalid place"
+        return error
+
+    return response.json()
+
