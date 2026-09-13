@@ -24,7 +24,7 @@ def get_github_user(username):
     url = f"https://api.github.com/users/{username}"
     try:
         r = requests.get(url)
-        r.raise_for_status
+        r.raise_for_status()
     except requests.exceptions.HTTPError:
         error = "error: invalid username"
         return error
@@ -36,7 +36,7 @@ def get_github_followers(username):
     url = f"https://api.github.com/users/{username}/followers"
     try:
         r = requests.get(url)
-        r.raise_for_status
+        r.raise_for_status()
     except requests.exceptions.HTTPError:
         error = "error: invalid username"
         return error
@@ -48,7 +48,7 @@ def get_github_following(username):
     url = f"https://api.github.com/users/{username}/following"
     try:
         r = requests.get(url)
-        r.raise_for_status
+        r.raise_for_status()
     except requests.exceptions.HTTPError:
         error = "error: invalid username"
         return error
@@ -156,6 +156,7 @@ def get_coordinates(city):
                 "format": "json"
             }
         )
+        response.raise_for_status()
     except requests.exceptions.HTTPError:
             error = "error: invalid city"
             return error

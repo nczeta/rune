@@ -6,61 +6,59 @@ import json
 
 load_dotenv()
 
-def main():
+def run_rune(user):
     client = Groq()
 
     messages = []
 
+    messages.append(
+        {
+            "role": "user",
+            "content": user
+        }
+    )
+
+    
+
     while True:
-        user_message = input("User: ")
-        messages.append(
-            {
-                "role": "user",
-                "content": user_message
-            }
-        )
-
-        
-
-        while True:
-            response = get_response(messages, client)
-            if not response.tool_calls:
-                print("Rune:",response.content)
-                messages.append(
-                    {
-                        "role": "assistant",
-                        "content": response.content
-                    }
-                )
-                break
-            else:
-                messages.append(
-                    {
-                        "role": "assistant",
-                        "content": response.content,
-                        "tool_calls": [
-                            {
-                                "id": response.tool_calls[0].id,
-                                "type": "function",
-                                "function": {
-                                    "name": response.tool_calls[0].function.name,
-                                    "arguments": response.tool_calls[0].function.arguments
-                                }
+        response = get_response(messages, client)
+        if not response.tool_calls:
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": response.content
+                }
+            )
+            return response.content
+        else:
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": response.content,
+                    "tool_calls": [
+                        {
+                            "id": response.tool_calls[0].id,
+                            "type": "function",
+                            "function": {
+                                "name": response.tool_calls[0].function.name,
+                                "arguments": response.tool_calls[0].function.arguments
                             }
-                        ]
-                    }
-                )
+                        }
+                    ]
+                }
+            )
+            
+            arguments = json.loads(response.tool_calls[0].function.arguments)
+            name = response.tool_calls[0].function.name
+            function = tool_functions[name]
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": response.tool_calls[0].id,
+                    "content": json.dumps(function(**arguments))
+                }
+            )
                 
-                arguments = json.loads(response.tool_calls[0].function.arguments)
-                name = response.tool_calls[0].function.name
-                function = tool_functions[name]
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": response.tool_calls[0].id,
-                        "content": json.dumps(function(**arguments))
-                    }
-                )   
             
             
 
@@ -72,6 +70,3 @@ def get_response(messages, client):
             tools = tools_des
         )
     return response.choices[0].message
-
-
-main()
