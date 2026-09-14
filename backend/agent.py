@@ -1,6 +1,6 @@
 from groq import Groq
-from tools_description import *
-from tools import *
+from tools.description import *
+from tools.tools import *
 from dotenv import load_dotenv
 import json
 

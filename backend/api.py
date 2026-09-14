@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from main import run_rune
+from backend.agent import run_rune
 
 app = FastAPI()
 app.add_middleware(
