@@ -141,6 +141,29 @@
     letter-spacing:.02em;
     max-width:520px;
   }
+
+  .get-started-wrap{
+    margin-top:44px;
+    display:flex; justify-content:center;
+  }
+  .btn-get-started{
+    background:transparent;
+    color:#ffffff;
+    border:1.5px solid #ffffff;
+    border-radius:12px;
+    padding:16px 42px;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:.08em;
+    cursor:pointer;
+    transition: background .25s var(--ease), color .25s var(--ease), transform .15s var(--ease);
+  }
+  .btn-get-started:hover{
+    background:#ffffff;
+    color:#000000;
+  }
+  .btn-get-started:active{ transform:scale(.97); }
   .scroll-cue{
     position:absolute; bottom:38px; left:50%; transform:translateX(-50%);
     display:flex; flex-direction:column; align-items:center; gap:8px;
@@ -676,38 +699,14 @@
       <div class="screen fade-in">
         <section class="landing-hero">
           <div class="wordmark" aria-label="RUNE">
-            <span class="wordmark-rune" aria-hidden="true">ᚱ</span><span>UNE</span>
+            <span>RUNE</span>
           </div>
-          <p class="hero-sub">Requests &amp; Utilities for Network Endpoints — one interface for the services you use.</p>
+
+          <div class="get-started-wrap">
+            <button class="btn-get-started" id="get-started-btn" type="button">GET STARTED</button>
+          </div>
 
           <div class="scroll-cue" aria-hidden="true"><span>SCROLL</span><span class="line"></span></div>
-        </section>
-
-        <section class="landing-body">
-          <div>
-            <div class="panel-label">Sign in</div>
-            <form class="auth-form" id="login-form" novalidate>
-              <div class="field">
-                <label for="login-email">Email</label>
-                <input id="login-email" name="email" type="email" placeholder="you@domain.com" autocomplete="email" required />
-              </div>
-              <div class="field">
-                <label for="login-password">Password</label>
-                <input id="login-password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
-              </div>
-              <div class="auth-error" id="login-error" role="alert"></div>
-              <button class="btn-primary" type="submit" id="login-submit">Sign in</button>
-              <p class="auth-note">Authentication is mocked for this build — enter any email and a password of 4+ characters. Real credentials will be handled by a backend, never stored here.</p>
-            </form>
-          </div>
-
-          <div>
-            <div class="panel-label">About</div>
-            <div class="about-copy">
-              <p>RUNE is an AI-oriented interface that talks to a handful of different network services — search, model inference, and more — through a single, unified surface, instead of a tab for each one.</p>
-              <p>It's a personal project by <span class="name-line">Niccolò Zampini</span>, built as an experiment in interface design as much as engineering.</p>
-            </div>
-          </div>
         </section>
       </div>
     `;
@@ -877,7 +876,6 @@
               <span style="font-size:11px; color:var(--muted);">${t ? '' : 'Loading…'}</span>
             </div>
             ${t ? `
-              <div class="bento-metric">${t.creditsRemaining.toLocaleString()} <span style="font-size:14px; color:var(--muted); font-family:var(--font-body); font-weight:400;">credits remaining</span></div>
               <div class="meter"><div class="meter-fill" style="width:${tavilyPct}%"></div></div>
             ` : `<div class="bento-metric">—</div>`}
             <a class="bento-link" href="https://tavily.com" target="_blank" rel="noopener">View Tavily ${arrowIcon()}</a>
@@ -964,7 +962,7 @@
           <div class="about-kicker">ABOUT ME</div>
           <div class="dev-block">
             <div>
-              <p class="dev-name">Niccolò Zampini</p>
+              <p class="dev-name">nczeta</p>
               <p class="dev-role">Student &amp; developer</p>
               <div class="about-body">
                 <p>I’m building RUNE as a personal project where software engineering, APIs and interface design meet. It started as an experiment in connecting different network services, but it has gradually become an attempt to give those services a single identity and a coherent place to live.</p>
@@ -1032,28 +1030,13 @@
     }
 
     if(route === '/'){
-      const form = document.getElementById('login-form');
-      form.addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value;
-        const btn = document.getElementById('login-submit');
-        const errEl = document.getElementById('login-error');
-        errEl.classList.remove('show');
-        btn.disabled = true;
-        btn.textContent = 'Signing in…';
-        const res = await authService.login(email, password);
-        if(res.ok){
+      const getStartedBtn = document.getElementById('get-started-btn');
+      if(getStartedBtn){
+        getStartedBtn.addEventListener('click', ()=>{
           state.authed = true;
-          state.user = res.user;
           navigate('/app');
-        } else {
-          errEl.textContent = res.error;
-          errEl.classList.add('show');
-          btn.disabled = false;
-          btn.textContent = 'Sign in';
-        }
-      });
+        });
+      }
     }
 
     if(route === '/app' || route === '/app/'){

@@ -10,16 +10,12 @@ messages = []
 def run_rune(user, messages):
     client = Groq()
 
-    
-
     messages.append(
         {
             "role": "user",
             "content": user
         }
     )
-
-    
 
     while True:
         response = get_response(messages, client)
