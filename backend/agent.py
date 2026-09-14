@@ -1,6 +1,6 @@
 from groq import Groq
-from tools_description import *
-from tools import *
+from tools.description import *
+from tools.tools import *
 from dotenv import load_dotenv
 import json
 
@@ -10,16 +10,12 @@ messages = []
 def run_rune(user, messages):
     client = Groq()
 
-    
-
     messages.append(
         {
             "role": "user",
             "content": user
         }
     )
-
-    
 
     while True:
         response = get_response(messages, client)

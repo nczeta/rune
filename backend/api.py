@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from main import run_rune
+from backend.agent import run_rune
 
 app = FastAPI()
 app.add_middleware(
@@ -29,7 +29,7 @@ def chat(request: ChatRequest):
 
 
 def frontend():
-    return FileResponse("rune_v4.html")
+    return FileResponse("frontend/index.html")
 
 
 app.add_api_route("/chat", chat, methods=["POST"])
