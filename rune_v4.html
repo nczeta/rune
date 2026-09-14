@@ -557,15 +557,22 @@
   const conversationService = {
     newConversationId(){ return "conv_" + (++conversationCounter) + "_" + Date.now(); },
     async sendMessage(conversationId, text){
-      // Placeholder assistant behavior. A real backend will
-      // stream tool-augmented responses from here instead.
-      await delay(900 + Math.random()*700);
-      if(Math.random() < 0.04){
-        throw new Error("The connection to RUNE's backend timed out.");
-      }
+      const response = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+              session_id: conversationId,
+              message: text
+          })
+      });
+
+      const data = await response.json();
+
       return {
-        role:"assistant",
-        text:"This is a placeholder response — RUNE isn't connected to a backend yet. Once it is, this is where a real answer to \u201c" + text.slice(0,80) + (text.length>80?"…":"") + "\u201d will appear."
+          role: "assistant",
+          text: data
       };
     }
   };
