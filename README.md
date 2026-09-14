@@ -90,7 +90,7 @@ Tavily currently provides a free monthly allowance for new accounts.
 RUNE uses the MAPS API for maps-related tools.
 
 Create a **Personal Access Token**, preferably a fine-grained token with only the permissions required by the project:
-
+[Google Maps](https://mapsplatform.google.com/maps-demo-key/)
 Then add it to `.env`:
 
 ```env
