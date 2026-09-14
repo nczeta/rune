@@ -5,11 +5,12 @@ from dotenv import load_dotenv
 import json
 
 load_dotenv()
+messages = []
 
-def run_rune(user):
+def run_rune(user, messages):
     client = Groq()
 
-    messages = []
+    
 
     messages.append(
         {
@@ -29,7 +30,7 @@ def run_rune(user):
                     "content": response.content
                 }
             )
-            return response.content
+            return response.content, messages
         else:
             messages.append(
                 {
