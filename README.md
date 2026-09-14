@@ -202,8 +202,6 @@ RUNE:
 
 The main components of the project are:
 
-```
-
 ### `agent.py`
 
 Contains the FastAPI application and the main agent logic.
