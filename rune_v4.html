@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RUNE — Requests & Utilities for Network Endpoints</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#000000;
+    --fg:#ffffff;
+    --surface:#0a0a0a;
+    --border:#2a2a2a;
+    --border-soft:#1c1c1c;
+    --muted:#7a7a7a;
+    --muted-2:#4a4a4a;
+    --disabled:#333333;
+    --radius-sm:6px;
+    --radius-md:14px;
+    --radius-lg:22px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'Inter', sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+  a{ color:inherit; }
+  button{ font-family:inherit; }
+  ::selection{ background:#ffffff; color:#000000; }
+
+  button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible, [tabindex]:focus-visible{
+    outline: 1.5px solid var(--fg);
+    outline-offset: 3px;
+  }
+
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap; border:0; padding:0; margin:-1px;
+  }
+
+  #app{ min-height:100vh; }
+  .screen{ min-height:100vh; }
+
+  /* ============ LOADER ============ */
+  #loader{
+    position:fixed; inset:0; background:#000; z-index:100;
+    display:flex; align-items:center; justify-content:center;
+    transition: opacity .7s var(--ease);
+  }
+  #loader.hide{ opacity:0; pointer-events:none; }
+  .loader-svg{
+    width:112px; height:auto;
+    overflow:visible;
+  }
+  .loader-path{
+    fill:none;
+    stroke:#fff;
+    stroke-width:5;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+
+  /* Reusable emblem (nav / brand) */
+  .rune-mark{ display:inline-flex; }
+  .rune-mark svg{ display:block; }
+  .rune-mark .hx{ fill:none; stroke:currentColor; stroke-width:2.4; }
+  .rune-mark .rn{ fill:none; stroke:currentColor; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; }
+
+  .brand-btn{
+    background:none; border:0; padding:2px; cursor:pointer; color:var(--fg);
+    display:inline-flex; align-items:center; justify-content:center;
+    transition: transform .35s var(--ease), opacity .35s var(--ease);
+  }
+  .brand-btn:hover{ transform:scale(1.08); opacity:.82; }
+  .brand-btn:active{ transform:scale(.96); }
+  .brand-btn .topbar-raido{
+    font-family:"Noto Sans Runic","Segoe UI Symbol",sans-serif;
+    font-size:42px;
+    line-height:1;
+  }
+
+  .rune-text{
+    font-family:"Noto Sans Runic","Segoe UI Symbol",sans-serif;
+    font-weight:400;
+    line-height:1;
+  }
+
+  /* ============ TOP BAR (auth app only) ============ */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:20;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 18px clamp(20px,5vw,56px);
+    pointer-events:none;
+  }
+  .topbar > *{ pointer-events:auto; }
+  .topbar-spacer{ width:54px; }
+
+  /* ============ PUBLIC LANDING ============ */
+  .landing-hero{
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding: 120px 24px 80px;
+    position:relative;
+  }
+  .wordmark{
+    display:flex; align-items:center; justify-content:center;
+    gap: clamp(1px, .65vw, 8px);
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size: clamp(110px, 21vw, 340px);
+    line-height:.86;
+    letter-spacing:-0.045em;
+    user-select:none;
+  }
+  .wordmark .wordmark-rune{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-family:"Noto Sans Runic","Segoe UI Symbol",sans-serif;
+    font-size:1em;
+    font-weight:400;
+    line-height:.86;
+    transform:translateY(.06em);
+  }
+
+  .hero-sub{
+    margin-top:26px;
+    color:var(--muted);
+    font-size: clamp(13px, 1.6vw, 16px);
+    letter-spacing:.02em;
+    max-width:520px;
+  }
+  .scroll-cue{
+    position:absolute; bottom:38px; left:50%; transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    color:var(--muted-2); font-size:12px; letter-spacing:.08em;
+  }
+  .scroll-cue .line{ width:1px; height:28px; background:var(--border); position:relative; overflow:hidden; }
+  .scroll-cue .line::after{
+    content:''; position:absolute; top:-100%; left:0; width:100%; height:100%;
+    background:var(--fg); animation:cue-fall 1.8s ease-in-out infinite;
+  }
+  @keyframes cue-fall{ 0%{top:-100%;} 60%{top:100%;} 100%{top:100%;} }
+
+  .landing-body{
+    max-width:920px; margin:0 auto; padding: 40px 24px 140px;
+    display:grid; grid-template-columns: 1fr 1fr; gap: 64px;
+  }
+  @media (max-width: 760px){ .landing-body{ grid-template-columns:1fr; gap:56px; } }
+
+  .panel-label{
+    font-family:var(--font-display); font-weight:600; font-size:13px;
+    letter-spacing:.06em; color:var(--muted); margin-bottom:18px;
+  }
+  .about-copy p{
+    color:#d9d9d9; font-size:15px; line-height:1.7; margin:0 0 16px;
+  }
+  .about-copy .name-line{ color:var(--fg); font-weight:500; }
+
+  /* Auth form */
+  .auth-form{ display:flex; flex-direction:column; gap:14px; max-width:340px; }
+  .field{ display:flex; flex-direction:column; gap:8px; }
+  .field label{ font-size:12px; color:var(--muted); letter-spacing:.02em; }
+  .field input{
+    background:transparent; border:1px solid var(--border); color:var(--fg);
+    border-radius:var(--radius-sm); padding:12px 14px; font-size:14px;
+    font-family:var(--font-body); transition:border-color .25s var(--ease);
+  }
+  .field input:focus{ border-color:var(--fg); }
+  .field input::placeholder{ color:var(--muted-2); }
+
+  .btn-primary{
+    background:var(--fg); color:#000; border:1px solid var(--fg);
+    border-radius:var(--radius-sm); padding:12px 18px; font-size:14px; font-weight:500;
+    cursor:pointer; margin-top:6px;
+    transition: background .25s var(--ease), transform .15s var(--ease), opacity .25s var(--ease);
+  }
+  .btn-primary:hover{ background:#e6e6e6; }
+  .btn-primary:active{ transform:scale(.98); }
+  .btn-primary:disabled{ opacity:.4; cursor:not-allowed; }
+
+  .btn-ghost{
+    background:transparent; color:var(--fg); border:1px solid var(--border);
+    border-radius:var(--radius-sm); padding:11px 16px; font-size:13px;
+    cursor:pointer; transition:border-color .25s var(--ease), background .25s var(--ease);
+  }
+  .btn-ghost:hover{ border-color:var(--fg); }
+
+  .auth-note{ font-size:12px; color:var(--muted-2); margin-top:2px; line-height:1.6; }
+  .auth-error{ font-size:12.5px; color:#fff; background:#1a0000; border:1px solid #4a1a1a; border-radius:var(--radius-sm); padding:9px 12px; display:none; }
+  .auth-error.show{ display:block; }
+
+  /* ============ HONEYCOMB ============ */
+  .honeycomb-screen{
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding: 100px 24px 60px;
+    position:relative;
+  }
+  .honeycomb-wrap{
+    position:relative; width:min(760px, 92vw); aspect-ratio:1/1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hc-cell{
+    position:absolute; width:29%; aspect-ratio: 1 / 1.02;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; background:none; border:0; padding:0;
+    transform: translate(-50%,-50%);
+  }
+  .hc-cell svg{ width:100%; height:100%; overflow:visible; }
+  .hc-hex{
+    fill:#000; stroke:var(--fg); stroke-width:2;
+    transition: fill .35s var(--ease), stroke .35s var(--ease);
+  }
+  .hc-rune-text{
+    font-family:"Noto Sans Runic","Segoe UI Symbol",sans-serif;
+    font-size:52px;
+    fill:var(--fg);
+    transition:fill .35s var(--ease);
+  }
+  .hc-cell.ghost{ cursor:default; pointer-events:none; opacity:.28; }
+  .hc-cell.ghost .hc-hex{ stroke:var(--border); }
+
+  .hc-cell:not(.ghost):hover .hc-hex,
+  .hc-cell:not(.ghost).focus-visible .hc-hex{ fill:#fff; stroke:#fff; }
+  .hc-cell:not(.ghost):hover .hc-rune-text,
+  .hc-cell:not(.ghost).focus-visible .hc-rune-text{ fill:#000; }
+  .hc-cell:not(.ghost):active svg{ transform:scale(.96); }
+  .hc-cell svg{ transition: transform .18s var(--ease); }
+
+  .hc-cell.center .hc-hex{ stroke-width:2.2; }
+
+  .hc-tooltip{
+    position:absolute; bottom:-30px; left:50%; transform:translateX(-50%) translateY(4px);
+    font-size:11.5px; letter-spacing:.04em; color:var(--fg);
+    background:#000; border:1px solid var(--border); padding:5px 10px; border-radius:20px;
+    white-space:nowrap; opacity:0; pointer-events:none;
+    transition: opacity .25s var(--ease), transform .25s var(--ease);
+  }
+  .hc-cell:hover .hc-tooltip, .hc-cell:focus-visible .hc-tooltip{
+    opacity:1; transform:translateX(-50%) translateY(0);
+  }
+
+  .hc-caption{
+    margin-top:34px; color:var(--muted); font-size:13px; letter-spacing:.02em; text-align:center;
+  }
+
+  /* Mobile: switch to a simple stacked layout for reliable touch targets */
+  @media (max-width: 560px){
+    .honeycomb-wrap{ width:100%; max-width:340px; aspect-ratio:auto; height:auto; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .hc-cell{ position:static; transform:none; width:100%; aspect-ratio:1/1; }
+    .hc-cell.center{ grid-column:1/3; max-width:180px; margin:0 auto 6px; }
+    .hc-cell.ghost{ display:none; }
+    .hc-tooltip{ position:static; opacity:1; transform:none; background:none; border:0; margin-top:8px; padding:0; text-align:center; display:block; }
+  }
+
+  /* ============ INTERNAL PAGE SHELL ============ */
+  .page{
+    min-height:100vh; padding: 108px clamp(20px,5vw,64px) 80px;
+    max-width:920px; margin:0 auto;
+  }
+  .page-eyebrow{ display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13px; margin-bottom:10px; }
+  .page-title{ font-family:var(--font-display); font-weight:600; font-size: clamp(28px,4vw,40px); margin:0 0 44px; letter-spacing:-.01em; }
+
+  /* ============ CONVERSATION ============ */
+  .conv-shell{ display:flex; flex-direction:column; height:calc(100vh - 108px); max-height:calc(100vh - 108px); }
+  .conv-header{ display:flex; align-items:center; justify-content:space-between; padding-bottom:22px; border-bottom:1px solid var(--border-soft); margin-bottom:8px; }
+  .conv-header h1{ font-family:var(--font-display); font-size:19px; font-weight:600; margin:0; }
+  .conv-messages{ flex:1; overflow-y:auto; padding: 28px 2px 20px; display:flex; flex-direction:column; gap:26px; }
+  .conv-messages:focus{ outline:none; }
+  .msg{ max-width: 640px; }
+  .msg-user{ margin-left:auto; }
+  .msg-role{ font-size:11px; letter-spacing:.06em; color:var(--muted-2); margin-bottom:6px; }
+  .msg-user .msg-role{ text-align:right; }
+  .msg-bubble{ font-size:15px; line-height:1.65; }
+  .msg-user .msg-bubble{
+    border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:12px 16px; background:var(--surface); text-align:left;
+  }
+  .msg-assistant .msg-bubble{ color:#eaeaea; }
+
+  .conv-empty{ margin:auto; text-align:center; color:var(--muted-2); font-size:14px; max-width:360px; }
+
+  .typing-dots{ display:inline-flex; gap:5px; align-items:center; padding:6px 0; }
+  .typing-dots span{ width:5px; height:5px; border-radius:50%; background:var(--muted); animation: dot-pulse 1.2s ease-in-out infinite; }
+  .typing-dots span:nth-child(2){ animation-delay:.15s; }
+  .typing-dots span:nth-child(3){ animation-delay:.3s; }
+  @keyframes dot-pulse{ 0%,60%,100%{ opacity:.25; transform:translateY(0);} 30%{ opacity:1; transform:translateY(-2px);} }
+
+  .conv-error{ font-size:13px; color:#ff9d9d; border:1px solid #3a1414; background:#140707; border-radius:var(--radius-sm); padding:10px 14px; max-width:640px; }
+
+  .composer-row{ display:flex; align-items:flex-end; gap:10px; padding-top:16px; border-top:1px solid var(--border-soft); }
+  .composer-form{ flex:1; display:flex; align-items:flex-end; gap:10px; border:1px solid var(--border); border-radius:var(--radius-lg); padding:8px 8px 8px 18px; transition:border-color .25s var(--ease); }
+  .composer-form:focus-within{ border-color:var(--fg); }
+  .composer-form textarea{
+    flex:1; background:none; border:0; color:var(--fg); font-family:var(--font-body);
+    font-size:14.5px; line-height:1.5; resize:none; max-height:160px; padding:8px 0;
+  }
+  .composer-form textarea:focus{ outline:none; }
+  .composer-form textarea::placeholder{ color:var(--muted-2); }
+
+  .send-btn{
+    width:46px; height:46px; border-radius:50%; background:var(--fg); border:0; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition: background .2s var(--ease), transform .15s var(--ease), opacity .2s var(--ease);
+  }
+  .send-btn:hover:not(:disabled){ background:#e6e6e6; }
+  .send-btn:active:not(:disabled){ transform:scale(.92); }
+  .send-btn:disabled{ background:var(--disabled); cursor:not-allowed; }
+  .send-btn svg{ width:19px; height:19px; }
+
+  .reset-btn{
+    width:46px; height:46px; border-radius:50%; background:none; border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--fg); flex-shrink:0;
+    transition: border-color .2s var(--ease), transform .4s var(--ease);
+  }
+  .reset-btn:hover{ border-color:var(--fg); }
+  .reset-btn:active svg{ transform:rotate(-70deg); }
+  .reset-btn svg{ width:19px; height:19px; transition: transform .4s var(--ease); }
+
+  .confirm-pop{
+    position:absolute; bottom:64px; right:0; background:#0a0a0a; border:1px solid var(--border);
+    border-radius:var(--radius-md); padding:16px; width:220px; font-size:13px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.6);
+    opacity:0; transform:translateY(6px); pointer-events:none; transition: opacity .2s var(--ease), transform .2s var(--ease);
+  }
+  .confirm-pop.show{ opacity:1; transform:translateY(0); pointer-events:auto; }
+  .confirm-pop p{ margin:0 0 12px; color:#ddd; line-height:1.5; }
+  .confirm-actions{ display:flex; gap:8px; }
+  .confirm-actions button{ flex:1; padding:8px 10px; font-size:12px; border-radius:6px; cursor:pointer; }
+  .confirm-actions .cancel{ background:none; border:1px solid var(--border); color:var(--fg); }
+  .confirm-actions .confirm{ background:var(--fg); border:1px solid var(--fg); color:#000; }
+  .composer-zone{ position:relative; }
+
+  /* ============ WIDGETS / BENTO ============ */
+  .bento-grid{
+    display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; grid-auto-rows: minmax(150px, auto);
+  }
+  @media (max-width: 720px){ .bento-grid{ grid-template-columns: repeat(2,1fr); } }
+
+  .bento-card{
+    border:1px solid var(--border); border-radius:var(--radius-lg); padding:22px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    background:var(--surface); transition: border-color .3s var(--ease), transform .3s var(--ease);
+  }
+  .bento-card:hover{ border-color:#4a4a4a; }
+  .bento-wide{ grid-column: span 2; }
+  .bento-tall{ grid-row: span 1; }
+  @media (max-width: 720px){ .bento-wide{ grid-column: span 2; } }
+
+  .bento-top{ display:flex; align-items:center; justify-content:space-between; }
+  .bento-title{ font-family:var(--font-display); font-weight:600; font-size:14px; letter-spacing:.04em; }
+  .status-dot{ width:7px; height:7px; border-radius:50%; background:#3ddc84; display:inline-block; margin-right:7px; box-shadow:0 0 0 3px rgba(61,220,132,.12); }
+  .status-dot.warn{ background:#e0a93d; box-shadow:0 0 0 3px rgba(224,169,61,.12); }
+
+  .bento-metric{ font-family:var(--font-display); font-size:clamp(26px,3vw,34px); font-weight:600; margin:14px 0 10px; }
+  .bento-desc{ color:var(--muted); font-size:12.5px; line-height:1.6; }
+
+  .meter{ height:4px; border-radius:3px; background:var(--border-soft); overflow:hidden; margin-top:6px; }
+  .meter-fill{ height:100%; background:var(--fg); border-radius:3px; }
+
+  .bento-link{ font-size:12.5px; color:#ddd; text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-top:16px; }
+  .bento-link:hover{ color:#fff; }
+  .bento-link svg{ width:11px; height:11px; }
+
+  .bento-placeholder{
+    display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:8px;
+    color:var(--muted-2); border-style:dashed;
+  }
+  .bento-placeholder .bento-title{ color:var(--muted); }
+    .service-card{
+    cursor:default;
+  }
+  .service-state{
+    font-size:10px;
+    letter-spacing:.1em;
+    color:var(--muted);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:4px 7px;
+  }
+
+  /* ============ ABOUT ============ */
+  .about-section{ margin-bottom:64px; }
+  .about-section:last-child{ margin-bottom:0; }
+  .about-kicker{ font-family:var(--font-display); font-weight:600; font-size:13px; letter-spacing:.08em; color:var(--muted); margin-bottom:16px; }
+  .about-lede{ font-family:var(--font-display); font-weight:500; font-size:clamp(20px,2.6vw,26px); line-height:1.4; margin:0 0 22px; letter-spacing:-.01em; max-width:640px; }
+  .about-body p{ color:#c9c9c9; font-size:14.5px; line-height:1.75; max-width:600px; margin:0 0 14px; }
+  .about-divider{ border:0; border-top:1px solid var(--border-soft); margin:56px 0; }
+
+  .dev-block{ display:flex; align-items:flex-start; gap:22px; flex-wrap:wrap; }
+  .dev-name{ font-family:var(--font-display); font-weight:600; font-size:22px; margin:0 0 4px; }
+  .dev-role{ color:var(--muted); font-size:13px; margin-bottom:14px; }
+  .dev-links{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  .dev-links a{
+    display:inline-flex; align-items:center; gap:7px; border:1px solid var(--border); border-radius:20px;
+    padding:8px 14px; font-size:12.5px; text-decoration:none; transition:border-color .25s var(--ease);
+  }
+  .dev-links a:hover{ border-color:var(--fg); }
+  .dev-links a svg{ width:11px; height:11px; }
+
+  /* ============ NAV DOTS (context indicator, optional restrained wayfinding) ============ */
+  .subnav{ position:fixed; top:26px; right:clamp(20px,5vw,56px); z-index:20; font-size:12px; color:var(--muted); letter-spacing:.03em; }
+
+  /* fade-in for page transitions */
+  .fade-in{ animation: fadein .5s var(--ease); }
+  @keyframes fadein{ from{ opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loader" aria-hidden="true">
+  <svg class="loader-svg" viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path class="loader-path" d="M30 10 L30 130" />
+    <path class="loader-path" d="M30 10 L72 34" />
+    <path class="loader-path" d="M72 34 L30 60" />
+    <path class="loader-path" d="M30 62 L76 130" />
+  </svg>
+</div>
+
+<div id="app"></div>
+
+<script>
+  /* Loader Function */
+  document.body.style.overflow = 'hidden';
+
+  window.onload = function(){
+    var loader = document.getElementById('loader');
+    var paths = document.querySelectorAll('.loader-path');
+
+    paths.forEach(function(path){
+      var length = path.getTotalLength();
+      path.style.strokeDasharray = length;
+      path.style.strokeDashoffset = length;
+    });
+
+    setTimeout(function(){
+      paths.forEach(function(path, i){
+        path.style.transition = 'stroke-dashoffset ' + (1.4 + i * 0.2) + 's cubic-bezier(0.4, 0, 0.2, 1)';
+        path.style.strokeDashoffset = '0';
+      });
+
+      setTimeout(function(){
+        paths.forEach(function(path, i){
+          var length = path.getTotalLength();
+          path.style.transition = 'stroke-dashoffset ' + (1.2 + i * 0.15) + 's cubic-bezier(0.4, 0, 0.2, 1)';
+          path.style.strokeDashoffset = length;
+        });
+
+        setTimeout(function(){
+          loader.style.transition = 'opacity 0.8s ease';
+          loader.style.opacity = '0';
+          document.body.style.overflow = '';
+          setTimeout(function(){ loader.style.display = 'none'; }, 800);
+        }, 1400);
+      }, 2000);
+    }, 400);
+  };
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------------------------------------------------
+     RUNE — frontend prototype
+     Plain JS, hash-based routing, in-memory state only.
+     Everything backend-shaped is isolated in services/* below
+     so a real API can be wired in later without touching the
+     view layer.
+  --------------------------------------------------------- */
+
+  /* ===================== RUNE GLYPHS ===================== */
+  // Shared SVG path data for every rune used in the interface.
+  // Each is drawn on a 0-100 box so they can be dropped into
+  // any size container consistently.
+  const RUNES = {
+    home: "ᚱ",
+    conversation: "ᚫ",
+    services: "ᛇ",
+    backend: "ᛉ",
+    logout: "ᚲ",
+    about: "ᚹ"
+  };
+
+  function hexPoints(cx, cy, r){
+    // flat-top hexagon
+    const pts = [];
+    for(let i=0;i<6;i++){
+      const angle = Math.PI/180 * (60*i - 90);
+      pts.push([cx + r*Math.cos(angle), cy + r*Math.sin(angle)].join(","));
+    }
+    return pts.join(" ");
+  }
+
+  function runeGlyphSVG(size, glyphKey, className=""){
+    return `<svg class="${className}" viewBox="0 0 100 100" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <text x="50" y="72" text-anchor="middle" class="rune-svg-text">${RUNES[glyphKey]}</text>
+    </svg>`;
+  }
+
+  function brandButton(){
+    return `<button class="brand-btn" id="brand-home-btn" aria-label="RUNE — go to Home"><span class="topbar-raido">ᚱ</span></button>`;
+  }
+
+  const PERSONAL_LOGO_SVG = `
+    <svg viewBox="0 0 500 510" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="rune-personal-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="rgba(10,10,10,1)"/>
+          <stop offset="50%" stop-color="rgba(20,33,61,1)"/>
+          <stop offset="100%" stop-color="rgba(31,42,68,1)"/>
+        </linearGradient>
+      </defs>
+      <rect width="500" height="500" fill="url(#rune-personal-bg)"/>
+      <g transform="translate(108,148) scale(1)" fill="#FCA311">
+        <path d="M65.2833 203.684H0.783325L94.7833 1.18393L127.283 70.6839L65.2833 203.684Z"/>
+        <path d="M218.783 1.68393L157.283 134.184L190.283 202.684L282.783 1.68393H218.783Z"/>
+      </g>
+    </svg>`;
+
+  function personalLogo(){
+    return `<div class="personal-logo">${PERSONAL_LOGO_SVG}</div>`;
+  }
+
+  /* ===================== MOCK SERVICES ===================== */
+  // These stand in for a real backend. Swap the implementation
+  // inside each function when the API exists — nothing in the
+  // view layer needs to change.
+
+  const authService = {
+    async login(email, password){
+      await delay(500);
+      if(!email || !password || password.length < 4){
+        return { ok:false, error:"Check your email and password." };
+      }
+      return { ok:true, user:{ email } };
+    },
+    logout(){ /* placeholder — would invalidate a session token */ }
+  };
+
+  let conversationCounter = 0;
+  const conversationService = {
+    newConversationId(){ return "conv_" + (++conversationCounter) + "_" + Date.now(); },
+    async sendMessage(conversationId, text){
+      const response = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+              session_id: conversationId,
+              message: text
+          })
+      });
+
+      const data = await response.json();
+
+      return {
+          role: "assistant",
+          text: data
+      };
+    }
+  };
+
+  const widgetsService = {
+    async getTavilyUsage(){
+      await delay(300);
+      return { creditsRemaining: 8421, creditsTotal: 10000, status:"operational" };
+    },
+    async getGroqStatus(){
+      await delay(260);
+      return { status:"operational", latencyMs: 214 };
+    }
+  };
+
+  function delay(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+  /* ===================== APP STATE ===================== */
+  const state = {
+    authed: false,
+    user: null,
+    route: "/",
+    conversation: {
+      conversationId: null,
+      messages: [],
+      loading: false,
+      error: null
+    }
+  };
+
+  /* ===================== ROUTER ===================== */
+  function normalizeHash(){
+    let h = location.hash.replace(/^#/,'') || '/';
+    if(!h.startsWith('/')) h = '/'+h;
+    return h;
+  }
+
+  function navigate(path){
+    if(location.hash.replace(/^#/,'') === path){ render(); return; }
+    location.hash = path;
+  }
+
+  window.addEventListener('hashchange', ()=>{
+    state.route = normalizeHash();
+    guardRoute();
+    render();
+  });
+
+  function guardRoute(){
+    const needsAuth = state.route.startsWith('/app');
+    if(needsAuth && !state.authed){
+      state.route = '/';
+      history.replaceState(null,'','#/');
+    }
+    if(!needsAuth && state.authed && state.route === '/'){
+      // fine — allow visiting public landing while authed only via explicit logout;
+      // otherwise send authed users to honeycomb by default on direct load
+    }
+  }
+
+  /* ===================== RENDER ROOT ===================== */
+  const appEl = document.getElementById('app');
+
+  function render(){
+    const route = state.route;
+    let html = "";
+    if(route === '/'){
+      html = renderLanding();
+    } else if(route === '/app' || route === '/app/'){
+      html = renderShell(renderHoneycomb());
+    } else if(route === '/app/conversation'){
+      html = renderShell(renderConversation());
+    } else if(route === '/app/widgets'){
+      html = renderShell(renderWidgets());
+    } else if(route === '/app/about'){
+      html = renderShell(renderAbout());
+    } else if(route === '/app/code'){
+      html = renderShell(renderCode());
+    } else {
+      html = renderLanding();
+    }
+    appEl.innerHTML = html;
+    bindEvents(route);
+  }
+
+  function renderShell(inner){
+    return `
+      <div class="screen fade-in">
+        <div class="topbar">
+          ${brandButton()}
+          <div class="topbar-spacer" aria-hidden="true"></div>
+        </div>
+        ${inner}
+      </div>
+    `;
+  }
+
+  /* ===================== LANDING ===================== */
+  function renderLanding(){
+    return `
+      <div class="screen fade-in">
+        <section class="landing-hero">
+          <div class="wordmark" aria-label="RUNE">
+            <span class="wordmark-rune" aria-hidden="true">ᚱ</span><span>UNE</span>
+          </div>
+          <p class="hero-sub">Requests &amp; Utilities for Network Endpoints — one interface for the services you use.</p>
+
+          <div class="scroll-cue" aria-hidden="true"><span>SCROLL</span><span class="line"></span></div>
+        </section>
+
+        <section class="landing-body">
+          <div>
+            <div class="panel-label">Sign in</div>
+            <form class="auth-form" id="login-form" novalidate>
+              <div class="field">
+                <label for="login-email">Email</label>
+                <input id="login-email" name="email" type="email" placeholder="you@domain.com" autocomplete="email" required />
+              </div>
+              <div class="field">
+                <label for="login-password">Password</label>
+                <input id="login-password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+              </div>
+              <div class="auth-error" id="login-error" role="alert"></div>
+              <button class="btn-primary" type="submit" id="login-submit">Sign in</button>
+              <p class="auth-note">Authentication is mocked for this build — enter any email and a password of 4+ characters. Real credentials will be handled by a backend, never stored here.</p>
+            </form>
+          </div>
+
+          <div>
+            <div class="panel-label">About</div>
+            <div class="about-copy">
+              <p>RUNE is an AI-oriented interface that talks to a handful of different network services — search, model inference, and more — through a single, unified surface, instead of a tab for each one.</p>
+              <p>It's a personal project by <span class="name-line">Niccolò Zampini</span>, built as an experiment in interface design as much as engineering.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
+  /* ===================== HONEYCOMB ===================== */
+  const HC_ITEMS = [
+    { key:'conversation', label:'Conversation', glyph:'conversation', route:'/app/conversation', angle:-90 },
+    { key:'services', label:'Services', glyph:'services', route:'/app/widgets', angle:30 },
+    { key:'about', label:'RUNE & About Me', glyph:'about', route:'/app/about', angle:150 },
+    { key:'logout', label:'Logout', glyph:'logout', route:'__logout__', angle:210 },
+  ];
+  const HC_GHOST_ANGLES = [90, 270];
+
+  function renderHoneycomb(){
+    const R = 34;
+    let cells = `
+      <button class="hc-cell center" data-route="/app" aria-label="RUNE Home" style="left:50%; top:50%;">
+        ${cellSVG('home')}
+        <span class="hc-tooltip">RUNE</span>
+      </button>
+    `;
+    HC_ITEMS.forEach(item=>{
+      const rad = item.angle * Math.PI/180;
+      const left = 50 + R*Math.cos(rad);
+      const top = 50 + R*Math.sin(rad);
+      cells += `
+        <button class="hc-cell" data-route="${item.route}" aria-label="${item.label}" style="left:${left}%; top:${top}%;">
+          ${cellSVG(item.glyph)}
+          <span class="hc-tooltip">${item.label}</span>
+        </button>
+      `;
+    });
+
+    HC_GHOST_ANGLES.forEach(angle=>{
+      const rad = angle * Math.PI/180;
+      const left = 50 + R*Math.cos(rad);
+      const top = 50 + R*Math.sin(rad);
+      cells += `<div class="hc-cell ghost" style="left:${left}%; top:${top}%;" aria-hidden="true">${cellSVG(null)}</div>`;
+    });
+
+    return `
+      <div class="honeycomb-screen">
+        <div class="honeycomb-wrap" role="navigation" aria-label="RUNE main navigation">
+          ${cells}
+        </div>
+        <p class="hc-caption">${state.user ? escapeHtml(state.user.email) : ''}</p>
+      </div>
+    `;
+  }
+
+  function cellSVG(glyphKey){
+    const pts = hexPoints(50,50,46);
+    const glyph = glyphKey
+      ? `<text class="hc-rune-text" x="50" y="52" text-anchor="middle" dominant-baseline="central">${RUNES[glyphKey]}</text>`
+      : '';
+    return `<svg viewBox="0 0 100 100"><polygon class="hc-hex" points="${pts}"></polygon>${glyph}</svg>`;
+  }
+
+  /* ===================== CONVERSATION ===================== */
+  function renderConversation(){
+    const c = state.conversation;
+    let messagesHtml = "";
+    if(c.messages.length === 0 && !c.loading){
+      messagesHtml = `<div class="conv-empty">Start a conversation. RUNE will route it to a model once a backend is connected — for now, responses are placeholders.</div>`;
+    } else {
+      c.messages.forEach(m=>{
+        messagesHtml += `
+          <div class="msg msg-${m.role}">
+            <div class="msg-role">${m.role === 'user' ? 'You' : 'RUNE'}</div>
+            <div class="msg-bubble">${escapeHtml(m.text)}</div>
+          </div>
+        `;
+      });
+      if(c.loading){
+        messagesHtml += `
+          <div class="msg msg-assistant">
+            <div class="msg-role">RUNE</div>
+            <div class="msg-bubble"><span class="typing-dots" aria-label="RUNE is responding"><span></span><span></span><span></span></span></div>
+          </div>
+        `;
+      }
+    }
+    const errorHtml = c.error ? `<div class="conv-error" role="alert">${escapeHtml(c.error)}</div>` : '';
+
+    return `
+      <div class="page">
+        <div class="conv-shell">
+          <div class="conv-header">
+            <h1>Conversation</h1>
+          </div>
+          <div class="conv-messages" id="conv-messages" tabindex="-1">${messagesHtml}</div>
+          ${errorHtml}
+          <div class="composer-row">
+            <form class="composer-form" id="composer-form">
+              <label for="composer-input" class="visually-hidden">Message</label>
+              <textarea id="composer-input" rows="1" placeholder="Message RUNE…" ${c.loading ? 'disabled' : ''}></textarea>
+              <button class="send-btn" type="submit" id="send-btn" ${c.loading ? 'disabled' : ''} aria-label="Send message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="6 11 12 5 18 11"/></svg>
+              </button>
+            </form>
+            <div class="composer-zone">
+              <button class="reset-btn" id="reset-btn" type="button" aria-label="Reset conversation" aria-haspopup="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 8 8 8"/></svg>
+              </button>
+              <div class="confirm-pop" id="confirm-pop">
+                <p>Reset this conversation? Messages won't be recoverable.</p>
+                <div class="confirm-actions">
+                  <button class="cancel" id="confirm-cancel" type="button">Cancel</button>
+                  <button class="confirm" id="confirm-ok" type="button">Reset</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function handleSendMessage(text){
+    const c = state.conversation;
+    if(!c.conversationId) c.conversationId = conversationService.newConversationId();
+    c.messages.push({ role:'user', text });
+    c.error = null;
+    c.loading = true;
+    render();
+    scrollConvToBottom();
+    try{
+      const res = await conversationService.sendMessage(c.conversationId, text);
+      c.messages.push({ role:'assistant', text: res.text });
+    }catch(err){
+      c.error = err.message || "Something went wrong reaching RUNE.";
+    }finally{
+      c.loading = false;
+      render();
+      scrollConvToBottom();
+    }
+  }
+
+  function scrollConvToBottom(){
+    const el = document.getElementById('conv-messages');
+    if(el) el.scrollTop = el.scrollHeight;
+  }
+
+  function resetConversation(){
+    state.conversation = { conversationId:null, messages:[], loading:false, error:null };
+    render();
+  }
+
+  /* ===================== WIDGETS ===================== */
+  /* ===================== WIDGETS ===================== */
+  let widgetsData = { tavily:null, groq:null, loaded:false };
+
+  function renderWidgets(){
+    const t = widgetsData.tavily;
+    const g = widgetsData.groq;
+    const tavilyPct = t ? Math.round((t.creditsRemaining / t.creditsTotal) * 100) : 0;
+
+    return `
+      <div class="page">
+        <div class="page-eyebrow">Services</div>
+        <h1 class="page-title">Service overview</h1>
+        <div class="bento-grid">
+          <div class="bento-card bento-wide">
+            <div class="bento-top">
+              <span class="bento-title">TAVILY</span>
+              <span style="font-size:11px; color:var(--muted);">${t ? '' : 'Loading…'}</span>
+            </div>
+            ${t ? `
+              <div class="bento-metric">${t.creditsRemaining.toLocaleString()} <span style="font-size:14px; color:var(--muted); font-family:var(--font-body); font-weight:400;">credits remaining</span></div>
+              <div class="meter"><div class="meter-fill" style="width:${tavilyPct}%"></div></div>
+            ` : `<div class="bento-metric">—</div>`}
+            <a class="bento-link" href="https://tavily.com" target="_blank" rel="noopener">View Tavily ${arrowIcon()}</a>
+          </div>
+
+          <div class="bento-card">
+            <div class="bento-top">
+              <span class="bento-title">GROQ</span>
+            </div>
+            <div style="margin-top:14px; font-size:14px; display:flex; align-items:center;">
+              <span class="status-dot"></span> ${g ? cap(g.status) : 'Loading…'}
+            </div>
+            <a class="bento-link" href="https://console.groq.com" target="_blank" rel="noopener">Open console ${arrowIcon()}</a>
+          </div>
+
+          <div class="bento-card service-card">
+            <div class="bento-top">
+              <span class="bento-title">GITHUB</span>
+              <span class="service-state">API</span>
+            </div>
+            <span class="bento-desc">Repository &amp; profile endpoints</span>
+            <a class="bento-link" href="https://api.github.com" target="_blank" rel="noopener">GitHub API ${arrowIcon()}</a>
+          </div>
+
+          <div class="bento-card service-card">
+            <div class="bento-top">
+              <span class="bento-title">WEATHER</span>
+              <span class="service-state">API</span>
+            </div>
+            <span class="bento-desc">Geocoding, current weather &amp; forecast endpoints</span>
+            <a class="bento-link" href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo ${arrowIcon()}</a>
+          </div>
+
+          <div class="bento-card service-card">
+            <div class="bento-top">
+              <span class="bento-title">MAPS</span>
+              <span class="service-state">API</span>
+            </div>
+            <span class="bento-desc">Places &amp; location endpoints</span>
+            <a class="bento-link" href="https://developers.google.com/maps" target="_blank" rel="noopener">Google Maps ${arrowIcon()}</a>
+          </div>
+
+          <div class="bento-card bento-placeholder bento-wide">
+            <span class="bento-title">MORE SERVICES</span>
+            <span class="bento-desc">The widget system is built to extend — new integrations plug into this grid as they're added.</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadWidgetsData(){
+    if(widgetsData.loaded) return;
+    const [t, g] = await Promise.all([widgetsService.getTavilyUsage(), widgetsService.getGroqStatus()]);
+    widgetsData = { tavily:t, groq:g, loaded:true };
+    if(state.route === '/app/widgets') render();
+  }
+
+  function arrowIcon(){
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
+  }
+  function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+  /* ===================== ABOUT ===================== */
+  function renderAbout(){
+    return `
+      <div class="page">
+        <div class="page-eyebrow">Info</div>
+        <h1 class="page-title">RUNE &amp; About Me</h1>
+
+        <section class="about-section">
+          <div class="about-kicker">RUNE</div>
+          <p class="about-lede">Requests &amp; Utilities for Network Endpoints.</p>
+          <div class="about-body">
+            <p>RUNE is a unified interface for interacting with external services and tools through one coherent environment, rather than switching between separate dashboards, APIs and consoles.</p>
+            <p>The idea is simple: the conversation is the central layer, while services around it provide the capabilities that make RUNE useful. Search, model inference, weather, maps and other endpoints can become parts of the same system instead of isolated tools.</p>
+            <p>The visual language follows the same principle. The honeycomb is not only navigation: each cell carries a rune chosen for the role it represents, giving the interface a symbolic layer without sacrificing its minimal, technical character.</p>
+          </div>
+        </section>
+
+        <hr class="about-divider" />
+
+        <section class="about-section">
+          <div class="about-kicker">ABOUT ME</div>
+          <div class="dev-block">
+            <div>
+              <p class="dev-name">Niccolò Zampini</p>
+              <p class="dev-role">Student &amp; developer</p>
+              <div class="about-body">
+                <p>I’m building RUNE as a personal project where software engineering, APIs and interface design meet. It started as an experiment in connecting different network services, but it has gradually become an attempt to give those services a single identity and a coherent place to live.</p>
+                <p>I’m interested in the part of development where a technical system becomes something people can actually understand and use. That is why RUNE is being designed from both sides at once: the code underneath and the interface that exposes it.</p>
+                <p>The project is intentionally unfinished. Integrations, backend logic and the visual language can all evolve together, with each new capability becoming another piece of the same system.</p>
+              </div>
+              <div class="dev-links">
+                <a href="https://github.com/" target="_blank" rel="noopener">GitHub ${arrowIcon()}</a>
+                <a href="#" target="_blank" rel="noopener">Website ${arrowIcon()}</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
+  /* ===================== CODE ===================== */
+  function renderCode(){
+    return `
+      <div class="page">
+        <div class="page-eyebrow">Code</div>
+        <h1 class="page-title">Inside RUNE</h1>
+
+        <p class="code-intro">
+          RUNE is built around small, focused integrations. One example is the use of
+          <strong>Requests</strong> in Python: the library handles HTTP requests to external
+          APIs and turns their responses into data RUNE can work with.
+        </p>
+
+        <div class="code-card">
+          <div class="code-card-head">
+            <span class="code-card-title">requests_example.py</span>
+            <div class="code-dots" aria-hidden="true">
+              <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+            </div>
+          </div>
+          <div class="code-body">
+            <pre><code><span class="py-key">import</span> requests
+
+<span class="py-key">def</span> <span class="py-fn">get_github_repos</span>(<span class="py-var">username</span>):
+    <span class="py-comment"># Ask GitHub's API for the user's repositories</span>
+    <span class="py-var">url</span> <span class="py-op">=</span> <span class="py-str">f"https://api.github.com/users/{username}/repos"</span>
+
+    <span class="py-var">response</span> <span class="py-op">=</span> requests.<span class="py-fn">get</span>(<span class="py-var">url</span>, <span class="py-var">timeout</span><span class="py-op">=</span><span class="py-num">10</span>)
+    <span class="py-var">response</span>.<span class="py-fn">raise_for_status</span>()
+
+    <span class="py-key">return</span> <span class="py-var">response</span>.<span class="py-fn">json</span>()</code></pre>
+          </div>
+        </div>
+
+        <p class="code-caption">
+          This is the kind of small backend building block behind RUNE's services:
+          make a request, validate the response, then return structured data to the layer above.
+        </p>
+      </div>
+    `;
+  }
+
+  /* ===================== EVENTS ===================== */
+  function bindEvents(route){
+    const brandBtn = document.getElementById('brand-home-btn');
+    if(brandBtn){
+      brandBtn.addEventListener('click', ()=> navigate('/app'));
+    }
+
+    if(route === '/'){
+      const form = document.getElementById('login-form');
+      form.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('login-submit');
+        const errEl = document.getElementById('login-error');
+        errEl.classList.remove('show');
+        btn.disabled = true;
+        btn.textContent = 'Signing in…';
+        const res = await authService.login(email, password);
+        if(res.ok){
+          state.authed = true;
+          state.user = res.user;
+          navigate('/app');
+        } else {
+          errEl.textContent = res.error;
+          errEl.classList.add('show');
+          btn.disabled = false;
+          btn.textContent = 'Sign in';
+        }
+      });
+    }
+
+    if(route === '/app' || route === '/app/'){
+      document.querySelectorAll('.hc-cell[data-route]').forEach(cell=>{
+        cell.addEventListener('click', ()=>{
+          const r = cell.getAttribute('data-route');
+          if(r === '__logout__'){
+            state.authed = false;
+            state.user = null;
+            navigate('/');
+          } else {
+            navigate(r);
+          }
+        });
+      });
+    }
+
+    if(route === '/app/conversation'){
+      const form = document.getElementById('composer-form');
+      const input = document.getElementById('composer-input');
+      input.focus();
+      autoGrow(input);
+      input.addEventListener('input', ()=> autoGrow(input));
+      input.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' && !e.shiftKey){
+          e.preventDefault();
+          form.requestSubmit();
+        }
+      });
+      form.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const text = input.value.trim();
+        if(!text || state.conversation.loading) return;
+        input.value = '';
+        handleSendMessage(text);
+      });
+
+      const resetBtn = document.getElementById('reset-btn');
+      const confirmPop = document.getElementById('confirm-pop');
+      resetBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(state.conversation.messages.length === 0) return;
+        confirmPop.classList.toggle('show');
+      });
+      document.getElementById('confirm-cancel').addEventListener('click', ()=> confirmPop.classList.remove('show'));
+      document.getElementById('confirm-ok').addEventListener('click', ()=>{
+        confirmPop.classList.remove('show');
+        resetConversation();
+      });
+      document.addEventListener('click', function outside(e){
+        if(confirmPop && !confirmPop.contains(e.target) && e.target !== resetBtn){
+          confirmPop.classList.remove('show');
+        }
+      }, { once:true });
+
+      scrollConvToBottom();
+    }
+
+    if(route === '/app/widgets'){
+      loadWidgetsData();
+    }
+  }
+
+  function autoGrow(el){
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  /* ===================== BOOT ===================== */
+  function boot(){
+    state.route = normalizeHash();
+    if(state.route === '') { location.hash = '/'; state.route = '/'; }
+    render();
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
