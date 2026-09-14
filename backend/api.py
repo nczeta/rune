@@ -29,7 +29,7 @@ def chat(request: ChatRequest):
 
 
 def frontend():
-    return FileResponse("rune_v4.html")
+    return FileResponse("frontend/index.html")
 
 
 app.add_api_route("/chat", chat, methods=["POST"])
