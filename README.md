@@ -148,7 +148,7 @@ Check out the env.example.txt to see if you created the .env file correctly.
 Once everything is configured, start the FastAPI backend with Uvicorn:
 
 ```bash
-uvicorn main:app --reload
+uvicorn backend.api:app --reload
 ```
 
 The `--reload` option automatically reloads the server when Python files are modified during development.
